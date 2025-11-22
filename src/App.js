@@ -1,28 +1,91 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Layout from "./components/layout/Layout";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import DashboardUser from "./pages/user/DashboardUser";
+import ApplicationForm from "./pages/user/ApplicationForm";
+import ApplicationStatus from "./pages/user/ApplicationStatus";
+import ApplicationHistory from "./pages/user/ApplicationHistory";
+
+// Защищенный маршрут
+const ProtectedRoute = ({ children }) => {
+  const isAuthenticated = !!localStorage.getItem('authToken');
+  return isAuthenticated ? children : <Navigate to="/login" />;
+};
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardUser />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/apply"
+            element={
+              <ProtectedRoute>
+                <ApplicationForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/status"
+            element={
+              <ProtectedRoute>
+                <ApplicationStatus />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute>
+                <ApplicationHistory />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Layout>
+    </BrowserRouter>
   );
 }
 
 export default App;
+
+// import logo from './logo.svg';
+// import './App.css';
+
+// function App() {
+//   return (
+//     <div className="App">
+//       <header className="App-header">
+//         <img src={logo} className="App-logo" alt="logo" />
+//         <p>
+//           Edit <code>src/App.js</code> and save to reload.
+//         </p>
+//         <a
+//           className="App-link"
+//           href="https://reactjs.org"
+//           target="_blank"
+//           rel="noopener noreferrer"
+//         >
+//           Learn React
+//         </a>
+//       </header>
+//     </div>
+//   );
+// }
+
+// export default App;
 
 // import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 // import Login from "./pages/Login";
