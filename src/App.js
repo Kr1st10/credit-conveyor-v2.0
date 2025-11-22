@@ -5,12 +5,23 @@ import Register from "./pages/auth/Register";
 import DashboardUser from "./pages/user/DashboardUser";
 import ApplicationForm from "./pages/user/ApplicationForm";
 import ApplicationStatus from "./pages/user/ApplicationStatus";
-import ApplicationHistory from "./pages/user/ApplicationHistory";
 
 // Защищенный маршрут
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = !!localStorage.getItem('authToken');
-  return isAuthenticated ? children : <Navigate to="/login" />;
+
+  console.log("ProtectedRoute проверка:", {
+    isAuthenticated,
+    token: localStorage.getItem('authToken')
+  }); // Отладка
+
+  if (!isAuthenticated) {
+    console.log("Не авторизован, перенаправляем на /login");
+    return <Navigate to="/login" replace />;
+  }
+
+  console.log("Авторизован, показываем содержимое");
+  return children;
 };
 
 function App() {
@@ -45,14 +56,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route
-            path="/history"
-            element={
-              <ProtectedRoute>
-                <ApplicationHistory />
-              </ProtectedRoute>
-            }
-          />
         </Routes>
       </Layout>
     </BrowserRouter>
@@ -60,63 +63,3 @@ function App() {
 }
 
 export default App;
-
-// import logo from './logo.svg';
-// import './App.css';
-
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.js</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer"
-//         >
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
-
-// export default App;
-
-// import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-// import Login from "./pages/Login";
-// import Register from "./pages/Register";
-// import DashboardUser from "./pages/DashboardUser";
-// import ApplicationForm from "./pages/ApplicationForm";
-// import ApplicationStatus from "./pages/ApplicationStatus";
-
-// function App() {
-//   return (
-//     <BrowserRouter>
-//       <header style={{ padding: "10px", background: "#f0f0f0" }}>
-//         <h1>Кредитный конвейер</h1>
-//         <nav>
-//           <Link to="/">Главная</Link> |{" "}
-//           <Link to="/login">Войти</Link> |{" "}
-//           <Link to="/register">Регистрация</Link> |{" "}
-//           <Link to="/dashboard">Кабинет</Link>
-//         </nav>
-//       </header>
-
-//       <Routes>
-//         <Route path="/" element={<Login />} />
-//         <Route path="/login" element={<Login />} />
-//         <Route path="/register" element={<Register />} />
-//         <Route path="/dashboard" element={<DashboardUser />} />
-//         <Route path="/apply" element={<ApplicationForm />} />
-//         <Route path="/status" element={<ApplicationStatus />} />
-//       </Routes>
-//     </BrowserRouter>
-//   );
-// }
-
-// export default App;
