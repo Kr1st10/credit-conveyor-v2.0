@@ -1,9 +1,9 @@
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import DashboardUser from "./pages/DashboardUser";
-import ApplicationForm from "./pages/ApplicationForm";
-import ApplicationStatus from "./pages/ApplicationStatus";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import DashboardUser from "./pages/user/DashboardUser";
+import ApplicationForm from "./pages/user/ApplicationForm";
+import ApplicationStatus from "./pages/user/ApplicationStatus";
 
 function App() {
     return (

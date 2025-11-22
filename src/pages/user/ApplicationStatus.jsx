@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getApplication } from "../api/fakeApi";
+import { getApplication } from "../../api/fakeApi";
 
 export default function ApplicationStatus() {
     const [app, setApp] = useState(null);

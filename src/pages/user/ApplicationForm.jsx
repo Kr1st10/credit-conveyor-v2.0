@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createApplication } from "../api/fakeApi";
+import { createApplication } from "../../api/fakeApi";
 import { useNavigate } from "react-router-dom";
 
 export default function ApplicationForm() {

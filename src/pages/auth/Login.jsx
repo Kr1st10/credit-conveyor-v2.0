@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { login } from "../api/fakeApi";
+import { login } from "../../api/fakeApi";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
