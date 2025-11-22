@@ -13,7 +13,7 @@ const ProtectedRoute = ({ children }) => {
   console.log("ProtectedRoute проверка:", {
     isAuthenticated,
     token: localStorage.getItem('authToken')
-  }); // Отладка
+  });
 
   if (!isAuthenticated) {
     console.log("Не авторизован, перенаправляем на /login");

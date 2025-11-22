@@ -15,7 +15,7 @@ export function useAuth() {
         const token = localStorage.getItem('authToken');
         const role = localStorage.getItem('userRole');
 
-        console.log("Проверка аутентификации:", { token, role }); // Отладка
+        console.log("Проверка аутентификации:", { token, role });
 
         if (token) {
             setIsAuthenticated(true);
@@ -25,7 +25,7 @@ export function useAuth() {
     };
 
     const login = (token, role) => {
-        console.log("Логин:", { token, role }); // Отладка
+        console.log("Логин:", { token, role });
         localStorage.setItem('authToken', token);
         localStorage.setItem('userRole', role);
         setIsAuthenticated(true);
@@ -33,9 +33,10 @@ export function useAuth() {
     };
 
     const logout = () => {
-        console.log("Выход из системы"); // Отладка
+        console.log("Выход из системы");
         localStorage.removeItem('authToken');
         localStorage.removeItem('userRole');
+        localStorage.removeItem('userData');
         setIsAuthenticated(false);
         setUserRole(null);
         navigate('/login');

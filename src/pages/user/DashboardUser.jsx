@@ -12,25 +12,30 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper
+    Paper,
+    Chip
 } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { applicationAPI } from '../../api/creditApi';
+import { applicationAPI } from '../../api/realApi';
 
 export default function DashboardUser() {
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        loadApplications();
+        loadMyApplications();
     }, []);
 
-    const loadApplications = async () => {
+    const loadMyApplications = async () => {
         try {
-            const response = await applicationAPI.getAll();
-            setApplications(response.data);
+            console.log("🔄 Загрузка заявок пользователя...");
+            const response = await applicationAPI.getMyApplications();
+            console.log("✅ Заявки получены:", response.data);
+            setApplications(response.data.items || []);
         } catch (error) {
-            console.error('Ошибка загрузки заявок:', error);
+            console.error('❌ Ошибка загрузки заявок:', error);
+            // Временно используем заглушку если API не работает
+            setApplications([]);
         } finally {
             setLoading(false);
         }
@@ -38,12 +43,24 @@ export default function DashboardUser() {
 
     const getStatusColor = (status) => {
         const colors = {
-            'NEW': '#1976d2',
-            'IN_PROGRESS': '#ed6c02',
-            'APPROVED': '#2e7d32',
-            'REJECTED': '#d32f2f'
+            'new': 'primary',
+            'in_progress': 'warning',
+            'approved': 'success',
+            'rejected': 'error',
+            'pending': 'info'
         };
-        return colors[status] || '#666';
+        return colors[status] || 'default';
+    };
+
+    const getStatusText = (status) => {
+        const texts = {
+            'new': 'Новая',
+            'in_progress': 'В обработке',
+            'approved': 'Одобрена',
+            'rejected': 'Отклонена',
+            'pending': 'Ожидает'
+        };
+        return texts[status] || status;
     };
 
     return (
@@ -72,58 +89,204 @@ export default function DashboardUser() {
                 <Card>
                     <CardContent>
                         <Typography variant="h6" gutterBottom>
-                            История заявок
+                            Мои кредитные заявки
                         </Typography>
 
-                        <TableContainer component={Paper}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>ID</TableCell>
-                                        <TableCell>Дата подачи</TableCell>
-                                        <TableCell>Сумма</TableCell>
-                                        <TableCell>Срок</TableCell>
-                                        <TableCell>Статус</TableCell>
-                                        <TableCell>Действия</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {applications.map((app) => (
-                                        <TableRow key={app.id}>
-                                            <TableCell>{app.id}</TableCell>
-                                            <TableCell>
-                                                {new Date(app.creationDate).toLocaleDateString()}
-                                            </TableCell>
-                                            <TableCell>{app.loanAmount?.toLocaleString()} руб.</TableCell>
-                                            <TableCell>{app.loanTerm} мес.</TableCell>
-                                            <TableCell>
-                                                <Typography
-                                                    color={getStatusColor(app.status)}
-                                                    fontWeight="bold"
-                                                >
-                                                    {app.status}
-                                                </Typography>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button
-                                                    component={Link}
-                                                    to={`/status?id=${app.id}`}
-                                                    size="small"
-                                                >
-                                                    Подробнее
-                                                </Button>
-                                            </TableCell>
+                        {loading ? (
+                            <Typography>Загрузка...</Typography>
+                        ) : applications.length === 0 ? (
+                            <Typography color="text.secondary">
+                                У вас пока нет кредитных заявок
+                            </Typography>
+                        ) : (
+                            <TableContainer component={Paper}>
+                                <Table>
+                                    <TableHead>
+                                        <TableRow>
+                                            <TableCell>ID</TableCell>
+                                            <TableCell>Дата подачи</TableCell>
+                                            <TableCell>Сумма</TableCell>
+                                            <TableCell>Срок</TableCell>
+                                            <TableCell>Статус</TableCell>
+                                            <TableCell>Действия</TableCell>
                                         </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
+                                    </TableHead>
+                                    <TableBody>
+                                        {applications.map((app) => (
+                                            <TableRow key={app.id}>
+                                                <TableCell>#{app.id}</TableCell>
+                                                <TableCell>
+                                                    {app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {app.amount ? `${app.amount.toLocaleString()} руб.` : 'N/A'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    {app.term ? `${app.term} мес.` : 'N/A'}
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Chip
+                                                        label={getStatusText(app.status)}
+                                                        color={getStatusColor(app.status)}
+                                                        size="small"
+                                                    />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Button
+                                                        component={Link}
+                                                        to={`/status?id=${app.id}`}
+                                                        size="small"
+                                                    >
+                                                        Подробнее
+                                                    </Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        )}
+
+                        <Button
+                            onClick={loadMyApplications}
+                            variant="outlined"
+                            sx={{ mt: 2 }}
+                        >
+                            Обновить список
+                        </Button>
                     </CardContent>
                 </Card>
             </Grid>
         </Grid>
     );
 }
+
+// import { useState, useEffect } from 'react';
+// import {
+//     Grid,
+//     Card,
+//     CardContent,
+//     Typography,
+//     Button,
+//     Box,
+//     Table,
+//     TableBody,
+//     TableCell,
+//     TableContainer,
+//     TableHead,
+//     TableRow,
+//     Paper
+// } from '@mui/material';
+// import { Link } from 'react-router-dom';
+// import { applicationAPI } from '../../api/creditApi';
+
+// export default function DashboardUser() {
+//     const [applications, setApplications] = useState([]);
+//     const [loading, setLoading] = useState(true);
+
+//     useEffect(() => {
+//         loadApplications();
+//     }, []);
+
+//     const loadApplications = async () => {
+//         try {
+//             const response = await applicationAPI.getAll();
+//             setApplications(response.data);
+//         } catch (error) {
+//             console.error('Ошибка загрузки заявок:', error);
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     const getStatusColor = (status) => {
+//         const colors = {
+//             'NEW': '#1976d2',
+//             'IN_PROGRESS': '#ed6c02',
+//             'APPROVED': '#2e7d32',
+//             'REJECTED': '#d32f2f'
+//         };
+//         return colors[status] || '#666';
+//     };
+
+//     return (
+//         <Grid container spacing={3}>
+//             <Grid item xs={12}>
+//                 <Card>
+//                     <CardContent>
+//                         <Box display="flex" justifyContent="space-between" alignItems="center">
+//                             <Typography variant="h4">
+//                                 Личный кабинет
+//                             </Typography>
+//                             <Button
+//                                 variant="contained"
+//                                 component={Link}
+//                                 to="/apply"
+//                                 size="large"
+//                             >
+//                                 Подать заявку на кредит
+//                             </Button>
+//                         </Box>
+//                     </CardContent>
+//                 </Card>
+//             </Grid>
+
+//             <Grid item xs={12}>
+//                 <Card>
+//                     <CardContent>
+//                         <Typography variant="h6" gutterBottom>
+//                             История заявок
+//                         </Typography>
+
+//                         <TableContainer component={Paper}>
+//                             <Table>
+//                                 <TableHead>
+//                                     <TableRow>
+//                                         <TableCell>ID</TableCell>
+//                                         <TableCell>Дата подачи</TableCell>
+//                                         <TableCell>Сумма</TableCell>
+//                                         <TableCell>Срок</TableCell>
+//                                         <TableCell>Статус</TableCell>
+//                                         <TableCell>Действия</TableCell>
+//                                     </TableRow>
+//                                 </TableHead>
+//                                 <TableBody>
+//                                     {applications.map((app) => (
+//                                         <TableRow key={app.id}>
+//                                             <TableCell>{app.id}</TableCell>
+//                                             <TableCell>
+//                                                 {new Date(app.creationDate).toLocaleDateString()}
+//                                             </TableCell>
+//                                             <TableCell>{app.loanAmount?.toLocaleString()} руб.</TableCell>
+//                                             <TableCell>{app.loanTerm} мес.</TableCell>
+//                                             <TableCell>
+//                                                 <Typography
+//                                                     color={getStatusColor(app.status)}
+//                                                     fontWeight="bold"
+//                                                 >
+//                                                     {app.status}
+//                                                 </Typography>
+//                                             </TableCell>
+//                                             <TableCell>
+//                                                 <Button
+//                                                     component={Link}
+//                                                     to={`/status?id=${app.id}`}
+//                                                     size="small"
+//                                                 >
+//                                                     Подробнее
+//                                                 </Button>
+//                                             </TableCell>
+//                                         </TableRow>
+//                                     ))}
+//                                 </TableBody>
+//                             </Table>
+//                         </TableContainer>
+//                     </CardContent>
+//                 </Card>
+//             </Grid>
+//         </Grid>
+//     );
+// }
 
 // import { Link } from "react-router-dom";
 
