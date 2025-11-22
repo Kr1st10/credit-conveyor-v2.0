@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Добавил useEffect в импорт
 import {
     TextField,
     Button,
@@ -10,16 +10,27 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { authAPI } from "../../api/realApi";
-import { API_CONFIG } from "../../api/config"; // Добавил импорт
+import { checkBackendHealth } from "../../api/apiClient";
 
 export default function Login() {
     const [form, setForm] = useState({
-        username: "", // ТОЧНО username (не email!)
+        username: "",
         password: ""
     });
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [backendStatus, setBackendStatus] = useState(null);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        checkBackendConnection();
+    }, []);
+
+    const checkBackendConnection = async () => {
+        const status = await checkBackendHealth();
+        setBackendStatus(status);
+        console.log("🔍 Статус бэкенда:", status);
+    };
 
     const handleChange = (field) => (e) => {
         setForm(prev => ({ ...prev, [field]: e.target.value }));
@@ -40,7 +51,6 @@ export default function Login() {
         console.log("🔄 Отправка запроса на /auth/login:", form);
 
         try {
-            // ТОЧНЫЙ формат из auth.py
             const response = await authAPI.login({
                 username: form.username.trim(),
                 password: form.password
@@ -48,7 +58,6 @@ export default function Login() {
 
             console.log("✅ Успешный ответ:", response.data);
 
-            // Сохраняем токен (ТОЧНЫЙ формат из auth.py)
             const { access_token, token_type } = response.data;
 
             localStorage.setItem("authToken", access_token);
@@ -72,7 +81,6 @@ export default function Login() {
         } catch (err) {
             console.error("❌ Ошибка входа:", err);
 
-            // ТОЧНАЯ обработка ошибок из auth.py
             const errorData = err.response?.data;
 
             if (errorData?.detail === "Incorrect username or password") {
@@ -81,6 +89,8 @@ export default function Login() {
                 setError("Аккаунт заблокирован или неактивен");
             } else if (errorData?.detail) {
                 setError(errorData.detail);
+            } else if (err.code === 'NETWORK_ERROR' || err.message?.includes('Network Error')) {
+                setError("Нет соединения с сервером. Проверьте, запущен ли бэкенд.");
             } else {
                 setError("Ошибка соединения с сервером");
             }
@@ -102,6 +112,17 @@ export default function Login() {
                         Вход в систему
                     </Typography>
 
+                    {/* Статус бэкенда */}
+                    {backendStatus && !backendStatus.available && (
+                        <Alert severity="warning" sx={{ mb: 2 }}>
+                            ⚠️ Бэкенд недоступен: {backendStatus.details}
+                            <br />
+                            <strong>Проверь:</strong>
+                            <br />• Запущен ли бэкенд на localhost:8000?
+                            <br />• Открывается ли http://localhost:8000/docs?
+                        </Alert>
+                    )}
+
                     {error && (
                         <Alert severity="error" sx={{ mb: 2 }}>
                             {error}
@@ -118,7 +139,6 @@ export default function Login() {
                             required
                             disabled={loading}
                             autoComplete="username"
-                            helperText="Используйте username, а не email"
                         />
                         <TextField
                             fullWidth
@@ -150,15 +170,6 @@ export default function Login() {
                         >
                             Нет аккаунта? Зарегистрироваться
                         </Button>
-                    </Box>
-
-                    {/* Отладочная информация */}
-                    <Box sx={{ mt: 2, p: 1, bgcolor: 'grey.100', borderRadius: 1 }}>
-                        <Typography variant="caption" color="text.secondary">
-                            Endpoint: POST {API_CONFIG.BASE_URL}{API_CONFIG.ENDPOINTS.AUTH.LOGIN}
-                            <br />
-                            Payload: {"{ username: '...', password: '...' }"}
-                        </Typography>
                     </Box>
                 </CardContent>
             </Card>

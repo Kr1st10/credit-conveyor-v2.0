@@ -1,6 +1,6 @@
-// Конфигурация API для FastAPI бэкенда
 export const API_CONFIG = {
     BASE_URL: 'http://localhost:8000',
+    TEST_MODE: false,  // ← МЕНЯЕМ НА false!
     ENDPOINTS: {
         AUTH: {
             LOGIN: '/auth/login',

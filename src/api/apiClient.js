@@ -1,6 +1,20 @@
 import axios from 'axios';
 import { API_CONFIG } from './config';
 
+// Функция для проверки доступности бэкенда
+export const checkBackendHealth = async () => {
+    try {
+        const response = await axios.get(`${API_CONFIG.BASE_URL}/docs`, { timeout: 5000 });
+        return { available: true, status: response.status };
+    } catch (error) {
+        return {
+            available: false,
+            error: error.message,
+            details: `Бэкенд недоступен по адресу: ${API_CONFIG.BASE_URL}`
+        };
+    }
+};
+
 const apiClient = axios.create({
     baseURL: API_CONFIG.BASE_URL,
     headers: {
