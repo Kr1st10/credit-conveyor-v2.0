@@ -17,7 +17,7 @@ export default function Register() {
         email: "",
         password: "",
         confirmPassword: "",
-        full_name: "",
+        full_name: "", // ← Теперь ОБЯЗАТЕЛЬНОЕ поле!
         phone_number: ""
     });
     const [error, setError] = useState("");
@@ -26,6 +26,24 @@ export default function Register() {
 
     const handleChange = (field) => (e) => {
         setForm(prev => ({ ...prev, [field]: e.target.value }));
+        setError("");
+    };
+
+    // Валидация пароля по требованиям бэкенда
+    const validatePassword = (password) => {
+        if (password.length < 8) {
+            return "Пароль должен содержать минимум 8 символов";
+        }
+        if (!/[A-Z]/.test(password)) {
+            return "Пароль должен содержать хотя бы одну заглавную букву";
+        }
+        if (!/[a-z]/.test(password)) {
+            return "Пароль должен содержать хотя бы одну строчную букву";
+        }
+        if (!/\d/.test(password)) {
+            return "Пароль должен содержать хотя бы одну цифру";
+        }
+        return "";
     };
 
     async function handleRegister(e) {
@@ -34,35 +52,43 @@ export default function Register() {
         setError("");
 
         // Валидация
+        if (!form.username.trim() || !form.email.trim() || !form.full_name.trim()) {
+            setError("Заполните все обязательные поля");
+            setLoading(false);
+            return;
+        }
+
         if (form.password !== form.confirmPassword) {
             setError("Пароли не совпадают");
             setLoading(false);
             return;
         }
 
-        if (form.password.length < 6) {
-            setError("Пароль должен содержать минимум 6 символов");
+        const passwordError = validatePassword(form.password);
+        if (passwordError) {
+            setError(passwordError);
             setLoading(false);
             return;
         }
 
-        if (!form.username.trim()) {
-            setError("Имя пользователя обязательно");
+        // Валидация username (только буквы, цифры, подчеркивания)
+        if (!/^[a-zA-Z0-9_]+$/.test(form.username)) {
+            setError("Имя пользователя может содержать только буквы, цифры и подчеркивания");
             setLoading(false);
             return;
         }
 
         try {
-            // Отправляем данные для регистрации (только нужные поля)
+            // ТОЧНЫЙ формат по схеме RegisterRequest
             const userData = {
-                username: form.username,
-                email: form.email,
+                username: form.username.trim(),
+                email: form.email.trim(),
                 password: form.password,
-                full_name: form.full_name,
-                phone_number: form.phone_number || null // может быть пустым
+                full_name: form.full_name.trim(), // ← ОБЯЗАТЕЛЬНОЕ!
+                phone_number: form.phone_number.trim() || null
             };
 
-            console.log("📝 Регистрация:", userData);
+            console.log("📝 Отправка данных регистрации:", userData);
             const response = await authAPI.register(userData);
 
             console.log("✅ Успешная регистрация:", response.data);
@@ -74,21 +100,20 @@ export default function Register() {
             console.error("❌ Ошибка регистрации:", err);
 
             const errorData = err.response?.data;
+            console.log("📋 Данные ошибки:", errorData);
 
+            // Обработка ошибок валидации FastAPI
             if (errorData?.detail) {
-                if (errorData.detail === "Username already registered") {
-                    setError("Имя пользователя уже занято");
-                } else if (errorData.detail === "Email already registered") {
-                    setError("Email уже зарегистрирован");
-                } else if (errorData.detail === "Phone number already registered") {
-                    setError("Номер телефона уже зарегистрирован");
-                } else {
-                    setError(errorData.detail);
-                }
-            } else if (err.code === 'NETWORK_ERROR' || err.message?.includes('Network Error')) {
-                setError("Нет соединения с сервером. Проверьте, запущен ли бэкенд.");
+                setError(errorData.detail);
+            } else if (Array.isArray(errorData)) {
+                // Обработка ошибок Pydantic
+                const errorMessages = errorData.map(err => {
+                    const field = err.loc?.[1] || 'данные';
+                    return `${field}: ${err.msg}`;
+                }).join(', ');
+                setError(`Ошибки в данных: ${errorMessages}`);
             } else {
-                setError("Ошибка регистрации. Попробуйте еще раз.");
+                setError("Ошибка регистрации. Проверьте введенные данные.");
             }
         } finally {
             setLoading(false);
@@ -123,7 +148,8 @@ export default function Register() {
                             margin="normal"
                             required
                             disabled={loading}
-                            helperText="Это имя вы будете использовать для входа"
+                            helperText="Только английские буквы, цифры и _"
+                            error={form.username && !/^[a-zA-Z0-9_]+$/.test(form.username)}
                         />
                         <TextField
                             fullWidth
@@ -137,10 +163,11 @@ export default function Register() {
                         />
                         <TextField
                             fullWidth
-                            label="Полное имя"
+                            label="Полное имя *"
                             value={form.full_name}
                             onChange={handleChange("full_name")}
                             margin="normal"
+                            required
                             disabled={loading}
                             placeholder="Иванов Иван Иванович"
                         />
@@ -151,7 +178,7 @@ export default function Register() {
                             onChange={handleChange("phone_number")}
                             margin="normal"
                             disabled={loading}
-                            placeholder="+7 900 123-45-67"
+                            placeholder="+79161234567"
                         />
                         <TextField
                             fullWidth
@@ -162,7 +189,8 @@ export default function Register() {
                             margin="normal"
                             required
                             disabled={loading}
-                            helperText="Минимум 6 символов"
+                            helperText="Минимум 8 символов, заглавная, строчная буква и цифра"
+                            error={form.password && validatePassword(form.password)}
                         />
                         <TextField
                             fullWidth
@@ -173,6 +201,7 @@ export default function Register() {
                             margin="normal"
                             required
                             disabled={loading}
+                            error={form.confirmPassword && form.password !== form.confirmPassword}
                         />
 
                         <Button
@@ -193,6 +222,17 @@ export default function Register() {
                         >
                             Уже есть аккаунт? Войти
                         </Button>
+                    </Box>
+
+                    {/* Подсказка по тестовым данным */}
+                    <Box sx={{ mt: 2, p: 1, bgcolor: 'grey.100', borderRadius: 1 }}>
+                        <Typography variant="caption" color="text.secondary">
+                            <strong>Тестовые данные для проверки:</strong>
+                            <br />Username: test_user123
+                            <br />Email: test@example.com
+                            <br />Full name: Тестовый Пользователь
+                            <br />Password: Test12345 (заглавная + строчная + цифры)
+                        </Typography>
                     </Box>
                 </CardContent>
             </Card>
