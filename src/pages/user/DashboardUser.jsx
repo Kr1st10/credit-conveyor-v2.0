@@ -30,9 +30,21 @@ export default function DashboardUser() {
     const loadMyApplications = async () => {
         try {
             console.log("🔄 Загрузка заявок пользователя...");
+
+            // Пробуем получить все заявки через активные
             const response = await applicationAPI.getMyApplications();
-            console.log("✅ Заявки получены:", response.data);
-            setApplications(response.data); // ← response.data, а не response.data.items
+            console.log("✅ Активные заявки:", response.data);
+
+            // Если нет активных, но мы знаем ID заявки - получаем ее отдельно
+            const lastAppId = localStorage.getItem("lastAppId");
+            if (response.data.length === 0 && lastAppId) {
+                console.log("🔄 Загружаем конкретную заявку по ID:", lastAppId);
+                const appResponse = await applicationAPI.getById(lastAppId);
+                setApplications([appResponse.data]);
+            } else {
+                setApplications(response.data);
+            }
+
         } catch (error) {
             console.error('❌ Ошибка загрузки заявок:', error);
             setApplications([]);
@@ -65,6 +77,7 @@ export default function DashboardUser() {
 
     return (
         <Grid container spacing={3}>
+
             <Grid item xs={12}>
                 <Card>
                     <CardContent>
@@ -119,10 +132,10 @@ export default function DashboardUser() {
                                                     {app.created_at ? new Date(app.created_at).toLocaleDateString() : 'N/A'}
                                                 </TableCell>
                                                 <TableCell>
-                                                    {app.amount ? `${app.amount.toLocaleString()} руб.` : 'N/A'}
+                                                    {app.loan_amount ? `${app.loan_amount.toLocaleString()} руб.` : 'N/A'}
                                                 </TableCell>
                                                 <TableCell>
-                                                    {app.term ? `${app.term} мес.` : 'N/A'}
+                                                    {app.loan_term ? `${app.loan_term} мес.` : 'N/A'}
                                                 </TableCell>
                                                 <TableCell>
                                                     <Chip
