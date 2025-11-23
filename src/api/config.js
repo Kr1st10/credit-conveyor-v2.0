@@ -1,6 +1,6 @@
 export const API_CONFIG = {
     BASE_URL: 'http://localhost:8000',
-    TEST_MODE: false,  // ← МЕНЯЕМ НА false!
+    TEST_MODE: false,
     ENDPOINTS: {
         AUTH: {
             LOGIN: '/auth/login',
@@ -8,9 +8,9 @@ export const API_CONFIG = {
             ME: '/auth/users/me'
         },
         APPLICATIONS: {
-            CREATE: '/credit_applications/',
-            LIST: '/auth/credit-applications/my',
-            DETAIL: '/credit_applications/{id}'
+            CREATE: '/credit-applications/', // ← ИСПРАВИЛ НА credit-applications
+            LIST: '/credit-applications/user/my-applications', // ← ИСПРАВИЛ
+            DETAIL: '/credit-applications/{id}' // ← ИСПРАВИЛ
         }
     }
 };
