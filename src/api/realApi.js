@@ -45,6 +45,7 @@ export const applicationAPI = {
 
     getMyApplications: async () => {
         const url = API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.APPLICATIONS.LIST;
+        console.log('📋 Get my applications URL:', url);
         return await apiClient.get(url);
     },
 

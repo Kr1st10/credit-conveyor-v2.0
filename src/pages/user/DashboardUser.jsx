@@ -23,6 +23,7 @@ export default function DashboardUser() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        console.log("🎯 Dashboard mounted, loading applications...");
         loadMyApplications();
     }, []);
 
@@ -31,10 +32,9 @@ export default function DashboardUser() {
             console.log("🔄 Загрузка заявок пользователя...");
             const response = await applicationAPI.getMyApplications();
             console.log("✅ Заявки получены:", response.data);
-            setApplications(response.data.items || []);
+            setApplications(response.data); // ← response.data, а не response.data.items
         } catch (error) {
             console.error('❌ Ошибка загрузки заявок:', error);
-            // Временно используем заглушку если API не работает
             setApplications([]);
         } finally {
             setLoading(false);
