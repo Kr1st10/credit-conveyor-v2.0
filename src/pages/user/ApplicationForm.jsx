@@ -14,10 +14,10 @@ import { applicationAPI } from "../../api/realApi";
 
 export default function ApplicationForm() {
     const [form, setForm] = useState({
-        passport: "",
+        passport_number: "", // ← ИЗМЕНИЛ НА passport_number
         inn: "",
-        loan_amount: "",
-        loan_term: ""
+        loan_amount: "",     // ← ИЗМЕНИЛ НА loan_amount
+        loan_term: ""        // ← ИЗМЕНИЛ НА loan_term
     });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -42,10 +42,10 @@ export default function ApplicationForm() {
         setErrors(prev => ({ ...prev, [field]: "" }));
     };
 
-    // Валидация полей
+    // Валидация полей по схеме бэкенда
     const validateField = (field, value) => {
         switch (field) {
-            case "passport":
+            case "passport_number":
                 if (!/^\d{10}$/.test(value.replace(/\s/g, ''))) {
                     return "Паспорт должен содержать 10 цифр (серия и номер)";
                 }
@@ -56,15 +56,15 @@ export default function ApplicationForm() {
                 }
                 break;
             case "loan_amount":
-                const amount = parseInt(value);
+                const amount = parseFloat(value);
                 if (!amount || amount < 10000 || amount > 5000000) {
                     return "Сумма кредита должна быть от 10,000 до 5,000,000 руб.";
                 }
                 break;
             case "loan_term":
                 const term = parseInt(value);
-                if (!term || term < 3 || term > 60) {
-                    return "Срок кредита должен быть от 3 до 60 месяцев";
+                if (!term || term < 6 || term > 60) { // ← ИЗМЕНИЛ на 6-60 месяцев
+                    return "Срок кредита должен быть от 6 до 60 месяцев";
                 }
                 break;
             default:
@@ -95,13 +95,13 @@ export default function ApplicationForm() {
         setLoading(true);
 
         try {
-            // Формируем данные заявки - используем ФИО из профиля пользователя
+            // ТОЧНЫЙ формат по схеме CreditApplicationCreate
             const applicationData = {
-                full_name: userData?.full_name, // Берем из профиля!
-                passport: form.passport.replace(/\s/g, ''),
-                inn: form.inn,
-                loan_amount: parseInt(form.loan_amount),
-                loan_term: parseInt(form.loan_term)
+                passport_number: form.passport_number.replace(/\s/g, ''), // ← 10 цифр без пробелов
+                inn: form.inn,                                            // ← 12 цифр
+                loan_amount: parseFloat(form.loan_amount),                // ← число с плавающей точкой
+                loan_term: parseInt(form.loan_term),                      // ← целое число
+                user_id: userData?.id                                     // ← ID пользователя из профиля
             };
 
             console.log("📄 Отправка заявки:", applicationData);
@@ -124,9 +124,10 @@ export default function ApplicationForm() {
             if (errorData?.detail) {
                 setErrors({ submit: errorData.detail });
             } else if (Array.isArray(errorData)) {
-                const errorMessages = errorData.map(err =>
-                    `${err.loc?.join('.')}: ${err.msg}`
-                ).join(', ');
+                const errorMessages = errorData.map(err => {
+                    const field = err.loc?.[1] || 'данные';
+                    return `${field}: ${err.msg}`;
+                }).join(', ');
                 setErrors({ submit: `Ошибки валидации: ${errorMessages}` });
             } else {
                 setErrors({ submit: "Ошибка при отправке заявки. Попробуйте еще раз." });
@@ -136,7 +137,7 @@ export default function ApplicationForm() {
         }
     };
 
-    // Форматирование паспорта (автоматическая расстановка пробелов)
+    // Форматирование паспорта (автоматическая расстановка пробелов для удобства)
     const formatPassport = (value) => {
         const numbers = value.replace(/\D/g, '');
         if (numbers.length <= 4) return numbers;
@@ -146,8 +147,8 @@ export default function ApplicationForm() {
     const handlePassportChange = (e) => {
         const value = e.target.value;
         const formatted = formatPassport(value);
-        setForm(prev => ({ ...prev, passport: formatted }));
-        setErrors(prev => ({ ...prev, passport: "" }));
+        setForm(prev => ({ ...prev, passport_number: formatted }));
+        setErrors(prev => ({ ...prev, passport_number: "" }));
     };
 
     return (
@@ -180,12 +181,13 @@ export default function ApplicationForm() {
                             <TextField
                                 fullWidth
                                 label="Паспорт (серия и номер)"
-                                value={form.passport}
+                                value={form.passport_number}
                                 onChange={handlePassportChange}
-                                error={!!errors.passport}
-                                helperText={errors.passport || "В формате: 4510 123456"}
+                                error={!!errors.passport_number}
+                                helperText={errors.passport_number || "10 цифр (серия 4 цифры + номер 6 цифр)"}
                                 placeholder="4510 123456"
                                 disabled={loading}
+                                inputProps={{ maxLength: 11 }} // 4 цифры + пробел + 6 цифр
                             />
                         </Grid>
 
@@ -216,7 +218,8 @@ export default function ApplicationForm() {
                                 InputProps={{
                                     inputProps: {
                                         min: 10000,
-                                        max: 5000000
+                                        max: 5000000,
+                                        step: 1000
                                     }
                                 }}
                             />
@@ -230,11 +233,11 @@ export default function ApplicationForm() {
                                 value={form.loan_term}
                                 onChange={handleChange("loan_term")}
                                 error={!!errors.loan_term}
-                                helperText={errors.loan_term || "От 3 до 60 месяцев"}
+                                helperText={errors.loan_term || "От 6 до 60 месяцев"}
                                 disabled={loading}
                                 InputProps={{
                                     inputProps: {
-                                        min: 3,
+                                        min: 6,
                                         max: 60
                                     }
                                 }}
@@ -258,10 +261,10 @@ export default function ApplicationForm() {
                 <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.100', borderRadius: 1 }}>
                     <Typography variant="body2" color="text.secondary">
                         <strong>Тестовые данные для проверки:</strong>
-                        <br />• Паспорт: 4510 123456
-                        <br />• ИНН: 123456789012
-                        <br />• Сумма: 500000
-                        <br />• Срок: 24
+                        <br />• Паспорт: 4510 123456 (10 цифр)
+                        <br />• ИНН: 123456789012 (12 цифр)
+                        <br />• Сумма: 500000 (от 10,000 до 5,000,000)
+                        <br />• Срок: 24 (от 6 до 60 месяцев)
                     </Typography>
                 </Box>
             </CardContent>
