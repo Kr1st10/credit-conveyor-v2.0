@@ -55,3 +55,82 @@ export const applicationAPI = {
         return await apiClient.get(url);
     }
 };
+
+// Админ функции
+export const adminAPI = {
+    // Заявки
+    getAllApplications: async (filters = {}) => {
+        const url = API_CONFIG.BASE_URL + '/admin/applications/';
+        return await apiClient.get(url, { params: filters });
+    },
+
+    getApplicationDetails: async (applicationId) => {
+        const url = API_CONFIG.BASE_URL + `/admin/applications/${applicationId}`;
+        return await apiClient.get(url);
+    },
+
+    updateApplicationStatus: async (applicationId, statusData) => {
+        const url = API_CONFIG.BASE_URL + `/admin/applications/${applicationId}/status`;
+        return await apiClient.put(url, statusData);
+    },
+
+    getDashboardStats: async () => {
+        const url = API_CONFIG.BASE_URL + '/admin/applications/stats/dashboard';
+        return await apiClient.get(url);
+    },
+
+    // Пользователи
+    getAllUsers: async () => {
+        const url = API_CONFIG.BASE_URL + '/admin-users/';
+        return await apiClient.get(url);
+    },
+
+    getUserDetails: async (userId) => {
+        const url = API_CONFIG.BASE_URL + `/admin-users/${userId}`;
+        return await apiClient.get(url);
+    },
+
+    updateUser: async (userId, userData) => {
+        const url = API_CONFIG.BASE_URL + `/admin-users/${userId}`;
+        return await apiClient.put(url, userData);
+    }
+};
+
+// Супер-админ функции
+export const superAdminAPI = {
+    getSystemHealth: async () => {
+        const url = API_CONFIG.BASE_URL + '/super-admin/system/health';
+        return await apiClient.get(url);
+    },
+
+    processPendingApplications: async () => {
+        const url = API_CONFIG.BASE_URL + '/super-admin/system/scoring/process-pending';
+        return await apiClient.post(url);
+    },
+
+    getAuditLog: async () => {
+        const url = API_CONFIG.BASE_URL + '/admin-reports/audit';
+        return await apiClient.get(url);
+    },
+
+    exportApplications: async () => {
+        const url = API_CONFIG.BASE_URL + '/admin-reports/export/applications';
+        return await apiClient.get(url, { responseType: 'blob' });
+    },
+
+    // Управление админами
+    getAllAdmins: async () => {
+        const url = API_CONFIG.BASE_URL + '/super-admin/admins';
+        return await apiClient.get(url);
+    },
+
+    createAdmin: async (adminData) => {
+        const url = API_CONFIG.BASE_URL + '/super-admin/admins';
+        return await apiClient.post(url, adminData);
+    },
+
+    removeAdmin: async (userId) => {
+        const url = API_CONFIG.BASE_URL + `/super-admin/admins/${userId}`;
+        return await apiClient.delete(url);
+    }
+};

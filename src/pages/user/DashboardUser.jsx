@@ -29,22 +29,12 @@ export default function DashboardUser() {
 
     const loadMyApplications = async () => {
         try {
-            console.log("🔄 Загрузка заявок пользователя...");
-
-            // Пробуем получить все заявки через активные
+            console.log("🔄 Загрузка ВСЕХ заявок пользователя...");
             const response = await applicationAPI.getMyApplications();
-            console.log("✅ Активные заявки:", response.data);
+            console.log("✅ Все заявки получены:", response.data);
 
-            // Если нет активных, но мы знаем ID заявки - получаем ее отдельно
-            const lastAppId = localStorage.getItem("lastAppId");
-            if (response.data.length === 0 && lastAppId) {
-                console.log("🔄 Загружаем конкретную заявку по ID:", lastAppId);
-                const appResponse = await applicationAPI.getById(lastAppId);
-                setApplications([appResponse.data]);
-            } else {
-                setApplications(response.data);
-            }
-
+            // Теперь response.data имеет структуру {items: [], total: , page: , size: , pages: }
+            setApplications(response.data.items || []);
         } catch (error) {
             console.error('❌ Ошибка загрузки заявок:', error);
             setApplications([]);
@@ -52,6 +42,32 @@ export default function DashboardUser() {
             setLoading(false);
         }
     };
+
+    // const loadMyApplications = async () => {
+    //     try {
+    //         console.log("🔄 Загрузка заявок пользователя...");
+
+    //         // Пробуем получить все заявки через активные
+    //         const response = await applicationAPI.getMyApplications();
+    //         console.log("✅ Активные заявки:", response.data);
+
+    //         // Если нет активных, но мы знаем ID заявки - получаем ее отдельно
+    //         const lastAppId = localStorage.getItem("lastAppId");
+    //         if (response.data.length === 0 && lastAppId) {
+    //             console.log("🔄 Загружаем конкретную заявку по ID:", lastAppId);
+    //             const appResponse = await applicationAPI.getById(lastAppId);
+    //             setApplications([appResponse.data]);
+    //         } else {
+    //             setApplications(response.data);
+    //         }
+
+    //     } catch (error) {
+    //         console.error('❌ Ошибка загрузки заявок:', error);
+    //         setApplications([]);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     const getStatusColor = (status) => {
         const colors = {

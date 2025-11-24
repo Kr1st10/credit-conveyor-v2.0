@@ -5,6 +5,8 @@ import Register from "./pages/auth/Register";
 import DashboardUser from "./pages/user/DashboardUser";
 import ApplicationForm from "./pages/user/ApplicationForm";
 import ApplicationStatus from "./pages/user/ApplicationStatus";
+import DashboardAdmin from './pages/admin/DashboardAdmin';
+
 
 // Защищенный маршрут
 const ProtectedRoute = ({ children }) => {
@@ -53,6 +55,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <ApplicationStatus />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardAdmin />
               </ProtectedRoute>
             }
           />

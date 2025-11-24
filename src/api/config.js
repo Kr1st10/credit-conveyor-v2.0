@@ -8,9 +8,10 @@ export const API_CONFIG = {
             ME: '/auth/users/me'
         },
         APPLICATIONS: {
-            CREATE: '/credit-applications/', // ← ИСПРАВИЛ НА credit-applications
-            LIST: '/credit-applications/user/my-applications', // ← ИСПРАВИЛ
-            DETAIL: '/credit-applications/{id}' // ← ИСПРАВИЛ
+            CREATE: '/credit-applications/',
+            LIST: '/credit-applications/user/all-applications', // ← ИЗМЕНИЛ на все заявки
+            DETAIL: '/credit-applications/{id}',
+            STATS: '/credit-applications/user/application-stats'
         }
     }
 };

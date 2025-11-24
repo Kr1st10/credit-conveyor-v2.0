@@ -5,6 +5,13 @@ import Register from "./pages/auth/Register";
 import DashboardUser from "./pages/user/DashboardUser";
 import ApplicationForm from "./pages/user/ApplicationForm";
 import ApplicationStatus from "./pages/user/ApplicationStatus";
+import DashboardAdmin from './pages/admin/DashboardAdmin';
+
+import DashboardAdmin from './pages/admin/DashboardAdmin';
+import ApplicationManagement from './pages/admin/ApplicationManagement';
+import UserManagement from './pages/admin/UserManagement';
+import DashboardSuperAdmin from './pages/super-admin/DashboardSuperAdmin';
+
 
 // Защищенный маршрут
 const ProtectedRoute = ({ children }) => {
@@ -56,6 +63,19 @@ function App() {
                             </ProtectedRoute>
                         }
                     />
+                    <Route
+                        path="/admin/dashboard"
+                        element={
+                            <ProtectedRoute>
+                                <DashboardAdmin />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route path="/admin/dashboard" element={<ProtectedRoute><DashboardAdmin /></ProtectedRoute>} />
+                    <Route path="/admin/applications" element={<ProtectedRoute><ApplicationManagement /></ProtectedRoute>} />
+                    <Route path="/admin/users" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
+                    <Route path="/super-admin" element={<ProtectedRoute><DashboardSuperAdmin /></ProtectedRoute>} />
                 </Routes>
             </Layout>
         </BrowserRouter>
