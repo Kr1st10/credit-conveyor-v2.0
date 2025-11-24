@@ -17,8 +17,9 @@ export default function Register() {
         email: "",
         password: "",
         confirmPassword: "",
-        full_name: "", // ← Теперь ОБЯЗАТЕЛЬНОЕ поле!
-        phone_number: ""
+        full_name: "",
+        phone_number: "",
+        salary: "" // ← ДОБАВИЛ ПОЛЕ ЗАРПЛАТЫ
     });
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
